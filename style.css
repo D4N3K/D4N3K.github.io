@@ -1,0 +1,11 @@
+canvas {
+    border-radius: 15px;
+}
+
+#title {
+    text-align: center;
+    color: rgb(100, 100, 100);
+    font-size: 25px;
+    font-weight: 600;
+    font-family: monaco, Consolas, "Lucida Console";
+}
