@@ -1,25 +1,49 @@
 body {
     margin: 0;
     font-family: Arial, sans-serif;
+    background-color: #efefef;
 }
 
 .navbar {
     position: fixed;
     top: 0;
     width: 100%;
-    background-color: #333;
+    height: 150px;
+    background-color: #3678bd;
     color: white;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
+    justify-content:space-between;
+    align-items:flex-end;
+    padding: 20px 40px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     z-index: 1000;
+    flex-direction: column;
+    align-items: stretch;
 }
 
-.navbar-title {
-    font-size: 24px;
+.navbar-title a {
+    flex: 1;
+    width: 100%;
+    text-align: center; 
+    font-size: 36px; 
     font-weight: bold;
+    color: white;
+    text-decoration: none;
+    position: absolute; 
+    left: 47.5%;
+    transform: translateX(-50%); 
+}
+
+.navbar-subtitle a {
+    flex: 1;
+    width: 100%;
+    text-align: center; 
+    font-size: 15px; 
+    color: white;
+    text-decoration: none;
+    position: absolute; 
+    left: 47.5%;
+    transform: translateX(-50%); 
 }
 
 .navbar-links a {
@@ -28,33 +52,52 @@ body {
     margin: 0 10px;
     padding: 8px 16px;
     transition: background-color 0.3s;
+    display: flexbox;
+    align-items: flex-end; 
 }
 
 .navbar-links a:hover {
-    background-color: #575757;
+    background-color: #2d6097
 }
 
 .content {
-    margin-top: 60px;
+    margin-top: 170px;
     padding: 20px;
 }
 
 .buttons {
     display: flex;
-    gap: 20px;
+    justify-content: center;
+    gap: 50px;
     margin-top: 20px;
 }
 
 .button {
-    background-color: #007BFF;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: transparent;
     color: white;
     padding: 15px 25px;
     text-decoration: none;
-    border-radius: 5px;
+    border-radius: 10px;
     transition: background-color 0.3s, transform 0.3s;
+    border: 2px solid transparent;
+}
+
+.button img {
+    max-width: 250px;
+    margin-bottom: 10px;
+}
+
+.button span {
+    color: black;
+    font-size: 30px;
+    margin-top: 5px;
 }
 
 .button:hover {
-    background-color: #0056b3;
+    background-color: rgb(220, 220, 220);
+    border: 2px solid #9d9d9d;
     transform: scale(1.05);
 }
