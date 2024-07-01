@@ -1,7 +1,7 @@
 let size;
 let n_walls = 10;
 let walls = [];
-let n_rays = 300;
+let n_rays = 80;
 let rays = [];
 let canvas;
 
