@@ -6,10 +6,29 @@
     <script src="https://cdn.jsdelivr.net/npm/p5@1.9.0/lib/p5.js"></script>
     <script src="main.js"></script>
     <script src="block.js"></script>
+    <link rel="icon" type="image/png" href="../../pics/logo.png">
 </head>
 <body>
     <main>
-        <p id="title">2048</p>
+        <div class="navbar">
+            <div class="buttons">
+                <a href="../index.html" class="button">
+                    <img src="../../pics/back.png" alt="Back">
+                </a>
+            </div>
+            <p id="title">2048</p>
+        </div>
+        <div class="arrow-buttons">
+            <button class="arrow-button" id="up-arrow"><</button>
+            <div class="side-arrows">
+                <button class="arrow-button" id="left-arrow"><</button>
+                <button class="arrow-button" id="down-arrow">></button>
+                <button class="arrow-button" id="right-arrow">></button>
+            </div>
+        </div>
+        <div class="score-table">
+            <p class="score">0</p>
+        </div>
     </main>
 </body>
 </html>

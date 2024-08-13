@@ -12,7 +12,7 @@ function getMousePosition() {
 function windowResized() {
     size = 0.8 * Math.min(windowWidth, windowHeight);
     resizeCanvas(size, size);
-    canvas.center("horizontal");
+    canvas.position(0.5*(windowWidth - size), 110);
 }
 
 function setup() {
@@ -38,7 +38,7 @@ function setup() {
 }
   
 function draw() {
-    background(2, 195, 230);
+    background(54, 120, 189);
 
     for (let i = 0; i < n_walls; i++) {
         walls[i].show();
