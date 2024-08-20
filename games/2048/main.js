@@ -82,18 +82,27 @@ function updateScoreBlockMobile(arr) {
     let ratio = 1.0/6;
     const scoreBlockDiv = document.querySelector(".score-table");
     const scoreBlock = document.querySelector(".score");
+    const restartButton = document.querySelector(".restart-button-container");
     let occupied_height =  1*init_top + size;
-    let score_block_width = keys_width;
     let score_block_height = ratio * keys_width;
+    let score_block_width = keys_width - keys_gap - score_block_height;
+    let restart_button_size = score_block_height;
+    let score_start_top = occupied_height + (keys_start_top - occupied_height)/2.0 - (score_block_height/2.0);
+    let restart_start_left = keys_start_left;
+    let score_start_left = keys_start_left + keys_gap + restart_button_size;
     scoreBlockDiv.style.width = String(score_block_width) + "px";
     scoreBlockDiv.style.height = String(score_block_height) + "px";
-    scoreBlockDiv.style.marginTop = String(occupied_height + (keys_start_top - occupied_height)/2.0 - (score_block_height/2.0)) + "px";
-    scoreBlockDiv.style.marginLeft = String(keys_start_left) + "px";
-    scoreBlockDiv.style.width = String(keys_width) + "px";
-    scoreBlockDiv.style.height = String(ratio * keys_width) + "px";
-    scoreBlock.style.width = String(keys_width) + "px";
-    scoreBlock.style.height = String(ratio * keys_width) + "px";
-    scoreBlock.style.fontSize = String((5.0/6) * ratio * keys_width) + "px";
+    scoreBlockDiv.style.marginTop = String(score_start_top) + "px";
+    scoreBlockDiv.style.marginLeft = String(score_start_left) + "px";
+    scoreBlock.style.width = String(score_block_width) + "px";
+    scoreBlock.style.height = String(score_block_height) + "px";
+    let font_size = (5.0/6) * ratio * keys_width;
+    scoreBlock.style.fontSize = String(font_size) + "px";
+    restartButton.style.width = String(restart_button_size) + "px";
+    restartButton.style.height = String(restart_button_size) + "px";
+    restartButton.style.marginTop = String(score_start_top) + "px";
+    restartButton.style.marginLeft = String(restart_start_left) + "px";
+    restartButton.style.fontSize = String(font_size) + "px";
 }
 
 function updateScoreBlockPC(arr) {
@@ -104,14 +113,27 @@ function updateScoreBlockPC(arr) {
     let keys_gap = arr[4];
     const scoreBlockDiv = document.querySelector(".score-table");
     const scoreBlock = document.querySelector(".score");
-    scoreBlockDiv.style.marginTop = String(init_top + 5*keys_gap) + "px";
-    scoreBlockDiv.style.marginLeft = String(keys_start_left) + "px";
+    const restartButton = document.querySelector(".restart-button-container");
     ratio = 1.0/6;
-    scoreBlockDiv.style.width = String(keys_width) + "px";
-    scoreBlockDiv.style.height = String(ratio * keys_width) + "px";
-    scoreBlock.style.width = String(keys_width) + "px";
-    scoreBlock.style.height = String(ratio * keys_width) + "px";
-    scoreBlock.style.fontSize = String((5.0/6) * ratio * keys_width) + "px";
+    let score_block_height = ratio * keys_width;
+    let score_block_width = keys_width - keys_gap - score_block_height;
+    let restart_button_size = score_block_height;
+    let score_start_top = init_top + 5*keys_gap;
+    let restart_start_left = keys_start_left;
+    let score_start_left = keys_start_left + keys_gap + restart_button_size;
+    scoreBlockDiv.style.marginTop = String(score_start_top) + "px";
+    scoreBlockDiv.style.marginLeft = String(score_start_left) + "px";
+    restartButton.style.marginTop = String(score_start_top) + "px";
+    restartButton.style.marginLeft = String(restart_start_left) + "px";
+    scoreBlockDiv.style.width = String(score_block_width) + "px";
+    scoreBlockDiv.style.height = String(score_block_height) + "px";
+    scoreBlock.style.width = String(score_block_width) + "px";
+    scoreBlock.style.height = String(score_block_height) + "px";
+    restartButton.style.width = String(restart_button_size) + "px";
+    restartButton.style.height = String(restart_button_size) + "px";
+    let font_size = (5.0/6) * ratio * keys_width;
+    restartButton.style.fontSize = String(font_size) + "px";
+    scoreBlock.style.fontSize = String(font_size) + "px";
 }
 
 function updateKeys(pos) {
@@ -218,6 +240,10 @@ function addButtonEventListeners() {
             buttonPressed(i);
         });
     }
+    restartButton = document.querySelector(".restart-button")
+    restartButton.addEventListener("click", function() {
+        setup();
+    });
 }
 
 function setup() {
