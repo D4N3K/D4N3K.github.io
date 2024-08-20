@@ -63,11 +63,12 @@ main {
 }
 
 .arrow-buttons {
-    width: 50%;
-    height: 50%;
+    width: 100%;
+    height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
+    position: absolute;
     margin-top: 25%;
     margin-left: 0;
     gap: 10px;

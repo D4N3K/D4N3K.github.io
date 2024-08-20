@@ -30,11 +30,9 @@ const stop = [  [-1, 3, 7, 11],
                 [13, 14, 15, 16]    ];
 
 function windowResized() {
-    size = 0.8 * Math.min(windowWidth, windowHeight);
-    size = 0.5 * windowWidth;
-    size = Math.min(size, (windowHeight - 1.2*init_top));
+    size = calculateCanvasSize();
     resizeCanvas(size, size);
-    let canvas_start_pos = 0.9*windowWidth - size;
+    let canvas_start_pos = updateCanvasStart();
     canvas.position(canvas_start_pos, init_top);
     getBlockPositions();
     updateBlocks();
@@ -42,10 +40,68 @@ function windowResized() {
     updateScoreBlock(blockArray);
 }
 
+function calculateCanvasSize() {
+    if (windowWidth > windowHeight) {
+        size = 0.5 * windowWidth;
+        size = Math.min(size, (windowHeight - 1.2*init_top));
+    }
+    else {
+        size = 0.9 * windowWidth;
+        let max_height = 0.6* windowHeight - 1.2*init_top;
+        size = Math.min(size, max_height);
+    }
+    return size
+}
+
+function updateCanvasStart() {
+    let canvas_start_pos = 0;
+    if (windowWidth > windowHeight) {
+        canvas_start_pos = 0.95*windowWidth - size;
+    }
+    else {
+        canvas_start_pos = (windowWidth - size)/2.0;
+    }
+    return canvas_start_pos;
+}
+
 function updateScoreBlock(arr) {
+    if (windowWidth > windowHeight) {
+        updateScoreBlockPC(arr);
+    } 
+    else {
+        updateScoreBlockMobile(arr);
+    }
+}
+
+function updateScoreBlockMobile(arr) {
     let keys_start_left = arr[0];
-    let keys_width = arr[1];
-    let keys_gap = arr[2];
+    let keys_start_top = arr[1];
+    let keys_width = arr[2];
+    let keys_height = arr[3];
+    let keys_gap = arr[4];
+    let ratio = 1.0/6;
+    const scoreBlockDiv = document.querySelector(".score-table");
+    const scoreBlock = document.querySelector(".score");
+    let occupied_height =  1*init_top + size;
+    let score_block_width = keys_width;
+    let score_block_height = ratio * keys_width;
+    scoreBlockDiv.style.width = String(score_block_width) + "px";
+    scoreBlockDiv.style.height = String(score_block_height) + "px";
+    scoreBlockDiv.style.marginTop = String(occupied_height + (keys_start_top - occupied_height)/2.0 - (score_block_height/2.0)) + "px";
+    scoreBlockDiv.style.marginLeft = String(keys_start_left) + "px";
+    scoreBlockDiv.style.width = String(keys_width) + "px";
+    scoreBlockDiv.style.height = String(ratio * keys_width) + "px";
+    scoreBlock.style.width = String(keys_width) + "px";
+    scoreBlock.style.height = String(ratio * keys_width) + "px";
+    scoreBlock.style.fontSize = String((5.0/6) * ratio * keys_width) + "px";
+}
+
+function updateScoreBlockPC(arr) {
+    let keys_start_left = arr[0];
+    let keys_start_top = arr[1];
+    let keys_width = arr[2];
+    let keys_height = arr[3];
+    let keys_gap = arr[4];
     const scoreBlockDiv = document.querySelector(".score-table");
     const scoreBlock = document.querySelector(".score");
     scoreBlockDiv.style.marginTop = String(init_top + 5*keys_gap) + "px";
@@ -59,18 +115,62 @@ function updateScoreBlock(arr) {
 }
 
 function updateKeys(pos) {
+    let arr = [];
+    if (windowWidth > windowHeight) {
+        arr = updateKeysPC(pos);
+    } 
+    else {
+        arr = updateKeysMobile(pos);
+    }
+    return arr;
+}
+
+function updateKeysMobile(pos) {
+    const keys = document.querySelector(".arrow-buttons");
+    let top_space = 0.1*windowHeight;
+    let bot_space = 0.05*windowHeight;
+    const keys_style = getComputedStyle(keys);
+    let keys_gap = parseInt(keys_style.getPropertyValue("gap"));
+    let keys_height = windowHeight - 1.2*init_top - size - top_space - bot_space;
+    let key_width = (keys_height - keys_gap)/2.0;
+    key_width = Math.min(key_width, (0.7*size)/3.0);
+    let keys_width = 3*key_width + 2*keys_gap;
+    let key = document.querySelectorAll(".arrow-button");
+    let key_width_value = String(key_width) + "px";
+    let key_font_size = key_width * (2/3);
+    let key_font_size_value = String(key_font_size) + "px";
+    let key_start_top = windowHeight - bot_space - keys_height;
+    let key_start_left = (windowWidth - keys_width)/2.0;
+    let key_start_top_value = String(key_start_top) + "px";
+    let key_start_left_value = String(key_start_left) + "px";
+    key.forEach((k) => {
+        k.style.width = key_width_value;
+        k.style.height = key_width_value;
+        k.style.fontSize = key_font_size_value;
+    });
+    keys.style.marginTop = key_start_top_value;
+    keys.style.marginLeft = key_start_left_value;
+    let keybox_width_value = String(keys_width) + "px";
+    let keybox_height_value = String(keys_height) + "px";
+    keys.style.width = keybox_width_value;
+    keys.style.height = keybox_height_value;
+    return [key_start_left, key_start_top, keys_width, keys_height, keys_gap]
+}
+
+function updateKeysPC(pos) {
     const keys = document.querySelector(".arrow-buttons");
     let space = windowWidth - pos - size;
-    let keys_width = windowWidth - (windowWidth - pos) - 2.5*space;
+    let keys_width = windowWidth - (windowWidth - pos) - 2*space;
     const keys_style = getComputedStyle(keys);
     let keys_gap = parseInt(keys_style.getPropertyValue("gap"));
     let key_width = (keys_width - 2*keys_gap)/3.0;
-    key_width = Math.min(key_width, 140, ((0.6*size)/2.0 - keys_gap));
+    key_width = Math.min(key_width, 160, ((0.5*size)/2.0 - keys_gap));
     key_width = Math.max(key_width, 60);
+    keys_width = 3*key_width + 2*keys_gap;
     let key = document.querySelectorAll(".arrow-button");
     let key_width_value = String(key_width) + "px";
     let key_start_top = init_top + size - 2*key_width - 5*keys_gap;
-    let key_start_left = space + (keys_width/2.0) - 1.5*key_width - keys_gap;
+    let key_start_left = (windowWidth - size - space)/2 - 1.5*key_width - keys_gap;
     let key_start_top_value = String(key_start_top) + "px";
     let key_start_left_value = String(key_start_left) + "px";
     let key_font_size = key_width * (2/3);
@@ -86,7 +186,7 @@ function updateKeys(pos) {
     let keybox_height_value = String(2*key_width + keys_gap) + "px";
     keys.style.width = keybox_width_value;
     keys.style.height = keybox_height_value;
-    return [key_start_left, keys_width, keys_gap]
+    return [key_start_left, key_start_top, keys_width, 0, keys_gap]
 }
 
 function getBlockPositions() {
@@ -242,8 +342,6 @@ function moveBlocks(idxs, dir, stop) {
         removeBlock(idx);
         change = true;
     }
-    console.log(isEmpty)
-    console.log(isMerged)
     if (change) generateBlock();
 }
 
@@ -271,7 +369,6 @@ function generateBlock() {
         }
     }
     let idx = idxs[Math.round(random(0, idxs.length - 1))];
-    console.log(idx);
     createBlock(idx, value);
 }
 
