@@ -1,21 +1,10 @@
 /*
     TO DO:
+        Stop loop - button and disable everything else
+        Score count
         Animation
 */
 
-let size = 400;
-let canvas;
-let blockPositions = [];
-let space = 10;
-let blockBorderRadius = 10;
-let n = 4;
-let blockSize;
-let blocks = [];
-let isEmpty = []
-let gameOver;
-let score;
-let scoreLabel;
-let init_top = 110;
 
 const idxs = [  [1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15],
                 [4, 8, 12, 5, 9, 13, 6, 10, 14, 7, 11, 15],
@@ -26,104 +15,6 @@ const stop = [  [-1, 3, 7, 11],
                 [-1, 0, 1, 2],
                 [4, 8, 12, 16],
                 [13, 14, 15, 16]    ];
-
-// --- ANIMACE POSUNU ---
-let isAnimating = false;
-let activeAnims = [];        // { fromIdx, toIdx, sprite(Block), start, end, t }
-let animHideIdx = new Set(); // indexy, které se při animaci nerysují (zdroje i cíle)
-const MOVE_ANIM_MS = 100;    // rychlost animace v milisekundách
-
-// --- ANIMACE ZROZENÍ NOVÉHO BLOKU ---
-let isSpawning = false;
-let spawnAnims = [];          // { idx, sprite(Block), t }
-let spawnHideIdx = new Set();
-const SPAWN_ANIM_MS = 200;
-
-function easeOutBack(x) {      // hezké „vyskočení“
-  const c1 = 1.70158, c3 = c1 + 1;
-  const y = x - 1;
-  return 1 + c3 * y * y * y + c1 * y * y;
-}
-
-function startSpawnAnimation(idx, value) {
-  const sprite = new Block([...blockPositions[idx]], blockSize, blockBorderRadius, value);
-  sprite.size = 0; // začínáme od 0
-  spawnAnims = [{ idx, sprite, t: 0 }];
-  spawnHideIdx = new Set([idx]);
-  isSpawning = true;
-}
-
-function updateAndRenderSpawn() {
-  if (!isSpawning) return;
-
-  let done = true;
-  for (const a of spawnAnims) {
-    // postup v čase
-    a.t = Math.min(1, a.t + (deltaTime || 16) / SPAWN_ANIM_MS);
-    const s = easeOutBack(a.t);              // 0 → 1
-    const full = blockSize;
-    const cur = full * s;
-    const [x0, y0] = blockPositions[a.idx];
-
-    // vycentruj zmenšený blok do políčka
-    a.sprite.pos = [x0 + (full - cur)/2, y0 + (full - cur)/2];
-    a.sprite.size = cur;
-    a.sprite.drawBlock();
-
-    if (a.t < 1) done = false;
-  }
-
-  if (done) {
-    isSpawning = false;
-    spawnAnims = [];
-    spawnHideIdx.clear();
-  }
-}
-
-
-function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
-
-function startMoveAnimations(pending) {
-  // pending: pole {from, to, value}
-  activeAnims = pending.map(p => {
-    const sprite = new Block([...blockPositions[p.from]], blockSize, blockBorderRadius, p.value); // „duch“ pro animaci
-    return {
-      fromIdx: p.from,
-      toIdx: p.to,
-      sprite,
-      start: blockPositions[p.from],
-      end: blockPositions[p.to],
-      t: 0
-    };
-  });
-
-  animHideIdx = new Set();
-  pending.forEach(p => { animHideIdx.add(p.from); animHideIdx.add(p.to); });
-  isAnimating = activeAnims.length > 0;
-}
-
-function updateAndRenderAnimations() {
-  if (!isAnimating) return;
-
-  let allDone = true;
-  for (const a of activeAnims) {
-    a.t = Math.min(1, a.t + (deltaTime || 16) / MOVE_ANIM_MS);
-    const x = lerp(a.start[0], a.end[0], easeOutCubic(a.t));
-    const y = lerp(a.start[1], a.end[1], easeOutCubic(a.t));
-    a.sprite.pos = [x, y];
-    a.sprite.size = blockSize;     // kdyby se během hry měnila velikost
-    a.sprite.drawBlock();
-    if (a.t < 1) allDone = false;
-  }
-
-  if (allDone) {
-    isAnimating = false;
-    activeAnims = [];
-    animHideIdx.clear();
-    generateBlock();               // nový blok až po dokončení animace
-  }
-}
-
 
 function windowResized() {
     size = calculateCanvasSize();
@@ -193,16 +84,15 @@ function updateScoreBlockMobile(arr) {
     scoreBlockDiv.style.marginLeft = String(score_start_left) + "px";
     scoreBlock.style.width = String(score_block_width) + "px";
     scoreBlock.style.height = String(score_block_height) + "px";
-    let font_size_score = (5.5/6) * ratio * keys_width;
-    let font_size_restart = (4.0/6) * restart_button_size;
-    scoreBlock.style.fontSize = String(font_size_score) + "px";
+    let font_size = (5.0/6) * ratio * keys_width;
+    scoreBlock.style.fontSize = String(font_size) + "px";
     restartButton.style.width = String(restart_button_size) + "px";
     restartButton.style.height = String(restart_button_size) + "px";
     restartButtonContainer.style.width = String(restart_button_size) + "px";
     restartButtonContainer.style.height = String(restart_button_size) + "px";
     restartButtonContainer.style.marginTop = String(score_start_top) + "px";
     restartButtonContainer.style.marginLeft = String(restart_start_left) + "px";
-    restartButton.style.fontSize = String(font_size_restart) + "px";
+    restartButtonContainer.style.fontSize = String(font_size) + "px";
 }
 
 function updateScoreBlockPC(arr) {
@@ -234,10 +124,9 @@ function updateScoreBlockPC(arr) {
     restartButtonContainer.style.height = String(restart_button_size) + "px";
     restartButton.style.width = String(restart_button_size) + "px";
     restartButton.style.height = String(restart_button_size) + "px";
-    let font_size_score = (5.5/6) * ratio * keys_width;
-    let font_size_restart = (4.0/6) * restart_button_size;
-    restartButton.style.fontSize = String(font_size_restart) + "px";
-    scoreBlock.style.fontSize = String(font_size_score) + "px";
+    let font_size = (5.0/6) * ratio * keys_width;
+    restartButtonContainer.style.fontSize = String(font_size) + "px";
+    scoreBlock.style.fontSize = String(font_size) + "px";
 }
 
 function updateKeys(pos) {
@@ -364,48 +253,29 @@ function setup() {
 }
   
 function draw() {
-  background(140, 140, 140);
-  noStroke();
-  fill(200);
+    background(140, 140, 140);    
+    noStroke();
+    fill(200);
 
-  drawScore();
+    drawScore();
 
-  // mřížka
-  for (let i = 0; i < blockPositions.length; i++) {
-    rect(blockPositions[i][0], blockPositions[i][1], blockSize, blockSize, blockBorderRadius);
-  }
+    for (let i = 0; i < blockPositions.length; i++) {
+        rect(blockPositions[i][0], blockPositions[i][1], blockSize, blockSize, blockBorderRadius);
+    }
 
-  // statické bloky – když animujeme, skryjeme zdroje i cíle (kreslí je „duchové“)
-  // statické bloky (když animujeme posun/spawn, zdroj/cíl se nekreslí)
     for (let i = 0; i < blocks.length; i++) {
-    if (blocks[i] === null) continue;
-    if ((isAnimating && animHideIdx.has(i)) || (isSpawning && spawnHideIdx.has(i))) continue;
-    blocks[i].size = blockSize;
-    blocks[i].pos = blockPositions[i];
-    blocks[i].drawBlock();
+        if (blocks[i] === null) continue;
+        blocks[i].drawBlock();
     }
 
-    // duchové posunu
-    updateAndRenderAnimations();
-
-    // duch zrození
-    updateAndRenderSpawn();
-
-  // game over overlay (tvůj původní kód)
-  if (checkGameOver()) {
-    if (gameOver) {
-      stopGame();
-    } else {
-      gameOver = true;
-      showGameOver({
-        score: score,
-        onRestart: () => { setup(); },
-        fadeMs: 500
-      });
+    if (checkGameOver()) {
+        if (gameOver) {
+            stopGame();
+        }
+        else {
+            gameOver = true;
+        }
     }
-  } else {
-    hideGameOver({ fadeMs: 500 });
-  }
 }
 
 function drawScore() {
@@ -440,84 +310,59 @@ function keyPressed() {
 }
 
 function moveBlocks(idxs, dir, stop) {
-  if (isAnimating) return; // během animace ignoruj vstup
-
-  let isMerged = new Array(n*n).fill(false);
-  let change = false;
-  const pending = []; // nasbírané animace {from,to,value}
-
-  for (let i = 0; i < idxs.length; i++) {
-    let idx = idxs[i];
-    if (isEmpty[idx]) continue;
-    let block = blocks[idx];
-
-    let tmp_idx = idx;
-    let stop_idx = 0;
-    let merged = false;
-    if (Math.abs(dir) === 1) stop_idx = Math.floor(idx / n);
-    else if (Math.abs(dir) === 4) stop_idx = Math.floor(idx % n);
-
-    if (dir < 0) {
-      while (tmp_idx > stop[stop_idx]) {
-        tmp_idx += dir;
-        if (tmp_idx <= stop[stop_idx]) break;
-        if (!isEmpty[tmp_idx]) {
-          if (!isMerged[tmp_idx]) {
-            // zkus merge „ručně“ (nepoužíváme tryMerge, ať máme plán animace)
-            if (blocks[idx] && blocks[tmp_idx] && blocks[idx].value === blocks[tmp_idx].value) {
-              pending.push({ from: idx, to: tmp_idx, value: block.value });
-              removeBlock(idx);
-              const v2 = block.value * 2;
-              removeBlock(tmp_idx);
-              createBlock(tmp_idx, v2);   // navýší i score
-              isMerged[tmp_idx] = true;
-              change = true;
-              merged = true;
-            }
-          }
-          break; // buď mergnuto, nebo narazeno
-        }
-      }
-    } else {
-      while (tmp_idx < stop[stop_idx]) {
-        tmp_idx += dir;
-        if (tmp_idx >= stop[stop_idx]) break;
-        if (!isEmpty[tmp_idx]) {
-          if (!isMerged[tmp_idx]) {
-            if (blocks[idx] && blocks[tmp_idx] && blocks[idx].value === blocks[tmp_idx].value) {
-              pending.push({ from: idx, to: tmp_idx, value: block.value });
-              removeBlock(idx);
-              const v2 = block.value * 2;
-              removeBlock(tmp_idx);
-              createBlock(tmp_idx, v2);
-              isMerged[tmp_idx] = true;
-              change = true;
-              merged = true;
-            }
-          }
-          break;
-        }
-      }
+    isMerged = [];
+    for (let i = 0; i < idxs.length; i++) {
+        isMerged[i] = false;
     }
 
-    if (merged) continue; // už jsme provedli merge a naplánovali animaci
+    let change = false;
+    for (let i = 0; i < idxs.length; i++) {
+        idx = idxs[i];
+        if (isEmpty[idx]) continue;
+        block = blocks[idx];
 
-    // posun do poslední prázdné pozice před překážkou
-    tmp_idx -= dir;
-    if (tmp_idx === idx) continue;
+        let tmp_idx = idx;
+        let stop_idx = 0;
+        let merged = false;
+        if (Math.abs(dir) === 1) stop_idx = Math.floor(idx / n);
+        else if (Math.abs(dir) === 4) stop_idx = Math.floor(idx % n);
+        if (dir < 0) {
+            while (tmp_idx > stop[stop_idx]) {
+                tmp_idx += dir;
+                if (tmp_idx <= stop[stop_idx]) break;
+                if (!isEmpty[tmp_idx]) {
+                    if (!isMerged[tmp_idx]) {
+                        merged = tryMerge(idx, tmp_idx);
+                        if (merged) isMerged[tmp_idx] = true;
+                        break;
+                    }
+                    else break;
+                }
+            }
+        }
+        else {
+            while (tmp_idx < stop[stop_idx]) {
+                tmp_idx += dir;
+                if (tmp_idx >= stop[stop_idx]) break;
+                if (!isEmpty[tmp_idx]) {
+                    if (!isMerged[tmp_idx]) {
+                        merged = tryMerge(idx, tmp_idx);
+                        if (merged) isMerged[tmp_idx] = true;
+                        break;
+                    }
+                    else break;
+                }
+            }
+        }   
+        tmp_idx -= dir;
+        if (tmp_idx === idx) continue;
 
-    pending.push({ from: idx, to: tmp_idx, value: block.value });
-    addBlock(tmp_idx, block);
-    removeBlock(idx);
-    change = true;
-  }
-
-  if (change) {
-    startMoveAnimations(pending);
-    // generateBlock() voláme až po animaci v updateAndRenderAnimations()
-  }
+        addBlock(tmp_idx, block);
+        removeBlock(idx);
+        change = true;
+    }
+    if (change) generateBlock();
 }
-
 
 function tryMerge(idx1, idx2) {
     block1 = blocks[idx1];
@@ -537,15 +382,13 @@ function generateBlock() {
     let idxs = [];
     let i = 0;
     for (let j = 0; j < isEmpty.length; j++) {
-        if (isEmpty[j]) { idxs[i++] = j; }
+        if (isEmpty[j]) {
+            idxs[i] = j;
+            i++;
+        }
     }
     let idx = idxs[Math.round(random(0, idxs.length - 1))];
-
-    // standardně vytvoř blok (tvůj scoring nechávám beze změny)
     createBlock(idx, value);
-
-    // a spustíme "zrození"
-    startSpawnAnimation(idx, value);
 }
 
 function createBlock(idx, value) {
@@ -590,4 +433,12 @@ function checkGameOver() {
 }
 
 function stopGame() {
+    background(50, 50, 50);
+    let d = new Date();
+    let init_time = d.getTime();
+    while (true) {
+        d = new Date();
+        if ((d.getTime() - init_time) > 5000) break;
+    }
+    setup();
 }
